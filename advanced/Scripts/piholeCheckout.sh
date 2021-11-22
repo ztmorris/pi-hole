@@ -84,11 +84,11 @@ checkout() {
         echo -e "  ${INFO} Shortcut \"dev\" detected - checking out development / devel branches..."
         echo ""
         echo -e "  ${INFO} Pi-hole Core"
-        fetch_checkout_pull_branch "${PI_HOLE_FILES_DIR}" "development" || { echo "  ${CROSS} Unable to pull Core development branch"; exit 1; }
+        fetch_checkout_pull_branch "${PI_HOLE_FILES_DIR}" "development" "reset" || { echo "  ${CROSS} Unable to pull Core development branch"; exit 1; }
         if [[ "${INSTALL_WEB_INTERFACE}" == "true" ]]; then
             echo ""
             echo -e "  ${INFO} Web interface"
-            fetch_checkout_pull_branch "${webInterfaceDir}" "devel" || { echo "  ${CROSS} Unable to pull Web development branch"; exit 1; }
+            fetch_checkout_pull_branch "${webInterfaceDir}" "devel" "reset" || { echo "  ${CROSS} Unable to pull Web development branch"; exit 1; }
         fi
         #echo -e "  ${TICK} Pi-hole Core"
 
@@ -100,10 +100,10 @@ checkout() {
         # Shortcut to check out master branches
         echo -e "  ${INFO} Shortcut \"master\" detected - checking out master branches..."
         echo -e "  ${INFO} Pi-hole core"
-        fetch_checkout_pull_branch "${PI_HOLE_FILES_DIR}" "master" || { echo "  ${CROSS} Unable to pull Core master branch"; exit 1; }
+        fetch_checkout_pull_branch "${PI_HOLE_FILES_DIR}" "master" "reset" || { echo "  ${CROSS} Unable to pull Core master branch"; exit 1; }
         if [[ ${INSTALL_WEB_INTERFACE} == "true" ]]; then
             echo -e "  ${INFO} Web interface"
-            fetch_checkout_pull_branch "${webInterfaceDir}" "master" || { echo "  ${CROSS} Unable to pull Web master branch"; exit 1; }
+            fetch_checkout_pull_branch "${webInterfaceDir}" "master" "reset" || { echo "  ${CROSS} Unable to pull Web master branch"; exit 1; }
         fi
         #echo -e "  ${TICK} Web Interface"
         local path
@@ -112,9 +112,9 @@ checkout() {
         chmod 644 /etc/pihole/ftlbranch
     elif [[ "${1}" == "core" ]] ; then
         str="Fetching branches from ${piholeGitUrl}"
-        echo -ne "  ${INFO} $str"
+        echo -e "  ${INFO} $str"
         if ! fully_fetch_repo "${PI_HOLE_FILES_DIR}" ; then
-            echo -e "${OVER}  ${CROSS} $str"
+            echo -e "  ${CROSS} $str"
             exit 1
         fi
         corebranches=($(get_available_branches "${PI_HOLE_FILES_DIR}"))
@@ -136,12 +136,12 @@ checkout() {
             for e in "${corebranches[@]}"; do echo "      - $e"; done
             exit 1
         fi
-        checkout_pull_branch "${PI_HOLE_FILES_DIR}" "${2}"
+        checkout_pull_branch "${PI_HOLE_FILES_DIR}" "${2}" "reset"
     elif [[ "${1}" == "web" ]] && [[ "${INSTALL_WEB_INTERFACE}" == "true" ]] ; then
         str="Fetching branches from ${webInterfaceGitUrl}"
-        echo -ne "  ${INFO} $str"
+        echo -e "  ${INFO} $str"
         if ! fully_fetch_repo "${webInterfaceDir}" ; then
-            echo -e "${OVER}  ${CROSS} $str"
+            echo -e "  ${CROSS} $str"
             exit 1
         fi
         webbranches=($(get_available_branches "${webInterfaceDir}"))
@@ -163,7 +163,7 @@ checkout() {
             for e in "${webbranches[@]}"; do echo "      - $e"; done
             exit 1
         fi
-        checkout_pull_branch "${webInterfaceDir}" "${2}"
+        checkout_pull_branch "${webInterfaceDir}" "${2}" "reset"
     elif [[ "${1}" == "ftl" ]] ; then
         local path
         local oldbranch

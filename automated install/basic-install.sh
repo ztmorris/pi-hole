@@ -2014,6 +2014,8 @@ fetch_checkout_pull_branch() {
     directory="${1}"
     local branch
     branch="${2}"
+    local pull_or_reset
+    pull_or_reset="${3}"
 
     # Set the reference for the requested branch, fetch, check it put and pull it
     cd "${directory}" || return 1
@@ -2021,7 +2023,7 @@ fetch_checkout_pull_branch() {
     git stash --all --quiet &> /dev/null || true
     git clean --quiet --force -d || true
     git fetch --quiet || return 1
-    checkout_pull_branch "${directory}" "${branch}" || return 1
+    checkout_pull_branch "${directory}" "${branch}" "${pull_or_reset}" || return 1
 }
 
 checkout_pull_branch() {
@@ -2030,25 +2032,42 @@ checkout_pull_branch() {
     directory="${1}"
     local branch
     branch="${2}"
+    local pull_or_reset
+    pull_or_reset="${3}"
     local oldbranch
 
     cd "${directory}" || return 1
 
     oldbranch="$(git symbolic-ref HEAD)"
 
-    str="Switching to branch: '${branch}' from '${oldbranch}'"
+    if [[ "${branch}" != "${oldbranch}" ]]; then
+      str="Switching to branch: '${branch}' from '${oldbranch}'"
+    else
+      str="Updating current branch: '${branch}'"
+    fi
     printf "  %b %s" "${INFO}" "$str"
     git checkout "${branch}" --quiet || return 1
     printf "%b  %b %s\\n" "${OVER}" "${TICK}" "$str"
     # Data in the repositories is public anyway so we can make it readable by everyone (+r to keep executable permission if already set by git)
     chmod -R a+rX "${directory}"
 
-    git_pull=$(git pull --no-rebase || return 1)
+    local git_pull
+    if [[ "${pull_or_reset}" == "reset" ]]; then
+      git_pull=$(git reset --hard "origin/${branch}" || return 1)
 
-    if [[ "$git_pull" == *"up-to-date"* ]]; then
-        printf "  %b %s\\n" "${INFO}" "${git_pull}"
+      if [[ "$git_pull" == *"up-to-date"* ]]; then
+          printf "  %b %s\\n" "${INFO}" "${git_pull}"
+      else
+          printf "%s\\n" "$git_pull"
+      fi
     else
-        printf "%s\\n" "$git_pull"
+      git_pull=$(git pull --no-rebase || return 1)
+
+      if [[ "$git_pull" == *"up-to-date"* ]]; then
+          printf "  %b %s\\n" "${INFO}" "${git_pull}"
+      else
+          printf "%s\\n" "$git_pull"
+      fi
     fi
 
     return 0
