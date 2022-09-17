@@ -244,7 +244,7 @@ get_sys_stats() {
 
         sys_name=$(hostname)
 
-        [[ -n "$TEMPERATUREUNIT" ]] && temp_unit="${TEMPERATUREUNIT^^}" || temp_unit="C"
+        [[ -n "$TEMPERATUREUNIT" ]] && temp_unit="${TEMPERATUREUNIT^^}" || temp_unit="F"
 
         # Get storage stats for partition mounted on /
         read -r -a disk_raw <<< "$(df -B1 / 2> /dev/null | awk 'END{ print $3,$2,$5 }')"
@@ -357,7 +357,7 @@ get_sys_stats() {
     ram_used="${ram_raw[1]}"
     ram_total="${ram_raw[2]}"
 
-    if [[ "$(pihole status web 2> /dev/null)" == "1" ]]; then
+    if [[ "$(pihole status web 2> /dev/null)" -ge "1" ]]; then
         ph_status="${COL_LIGHT_GREEN}Active"
     else
         ph_status="${COL_LIGHT_RED}Offline"

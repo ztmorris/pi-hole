@@ -116,9 +116,9 @@ def test_installPiholeWeb_fresh_install_no_errors(host):
     source /opt/pihole/basic-install.sh
     installPiholeWeb
     ''')
-    expected_stdout = info_box + ' Installing blocking page...'
+    expected_stdout = info_box + ' Installing 404 page...'
     assert expected_stdout in installWeb.stdout
-    expected_stdout = tick_box + (' Creating directory for blocking page, '
+    expected_stdout = tick_box + (' Creating directory for 404 page, '
                                   'and copying files')
     assert expected_stdout in installWeb.stdout
     expected_stdout = info_box + ' Backing up index.lighttpd.html'
@@ -130,7 +130,6 @@ def test_installPiholeWeb_fresh_install_no_errors(host):
     assert expected_stdout in installWeb.stdout
     web_directory = host.run('ls -r /var/www/html/pihole').stdout
     assert 'index.php' in web_directory
-    assert 'blockingpage.css' in web_directory
 
 
 def get_directories_recursive(host, directory):
@@ -150,10 +149,10 @@ def get_directories_recursive(host, directory):
 
 def test_installPihole_fresh_install_readableFiles(host):
     '''
-    confirms all neccessary files are readable by pihole user
+    confirms all necessary files are readable by pihole user
     '''
-    # Whiptail dialog returns Cancel for user prompt
-    mock_command('whiptail', {'*': ('', '0')}, host)
+    # dialog returns Cancel for user prompt
+    mock_command('dialog', {'*': ('', '0')}, host)
     # mock git pull
     mock_command_passthrough('git', {'pull': ('', '0')}, host)
     # mock systemctl to not start lighttpd and FTL
@@ -240,24 +239,14 @@ def test_installPihole_fresh_install_readableFiles(host):
         'r', '/etc/pihole/dns-servers.conf', piholeuser)
     actual_rc = host.run(check_servers).rc
     assert exit_status_success == actual_rc
-    # readable GitHubVersions
-    check_version = test_cmd.format(
-        'r', '/etc/pihole/GitHubVersions', piholeuser)
-    actual_rc = host.run(check_version).rc
-    assert exit_status_success == actual_rc
     # readable install.log
     check_install = test_cmd.format(
         'r', '/etc/pihole/install.log', piholeuser)
     actual_rc = host.run(check_install).rc
     assert exit_status_success == actual_rc
-    # readable localbranches
-    check_localbranch = test_cmd.format(
-        'r', '/etc/pihole/localbranches', piholeuser)
-    actual_rc = host.run(check_localbranch).rc
-    assert exit_status_success == actual_rc
-    # readable localversions
+    # readable versions
     check_localversion = test_cmd.format(
-        'r', '/etc/pihole/localversions', piholeuser)
+        'r', '/etc/pihole/versions', piholeuser)
     actual_rc = host.run(check_localversion).rc
     assert exit_status_success == actual_rc
     # readable logrotate
@@ -351,10 +340,6 @@ def test_installPihole_fresh_install_readableFiles(host):
             'r', '/usr/local/share/man/man8/pihole-FTL.8', piholeuser)
         actual_rc = host.run(check_man).rc
         assert exit_status_success == actual_rc
-        check_man = test_cmd.format(
-            'r', '/usr/local/share/man/man5/pihole-FTL.conf.5', piholeuser)
-        actual_rc = host.run(check_man).rc
-        assert exit_status_success == actual_rc
     # check not readable sudoers file
     check_sudo = test_cmd.format(
         'r', '/etc/sudoers.d/pihole', piholeuser)
@@ -397,8 +382,8 @@ def test_installPihole_fresh_install_readableBlockpage(host, test_webpage):
         "127.0.0.1",
         # "pi.hole"
     ]
-    # Whiptail dialog returns Cancel for user prompt
-    mock_command('whiptail', {'*': ('', '0')}, host)
+    # dialog returns Cancel for user prompt
+    mock_command('dialog', {'*': ('', '0')}, host)
 
     # mock git pull
     mock_command_passthrough('git', {'pull': ('', '0')}, host)
@@ -487,7 +472,6 @@ def test_installPihole_fresh_install_readableBlockpage(host, test_webpage):
         setup_var_file += "{}={}\n".format(k, v)
     setup_var_file += "INSTALL_WEB_SERVER=true\n"
     setup_var_file += "INSTALL_WEB_INTERFACE=true\n"
-    setup_var_file += "IPV4_ADDRESS=127.0.0.1\n"
     setup_var_file += "EOF\n"
     host.run(setup_var_file)
     installWeb = host.run('''
@@ -610,10 +594,6 @@ def test_installPihole_fresh_install_readableBlockpage(host, test_webpage):
             'r', webroot + '/pihole/index.php', webuser)
         actual_rc = host.run(check_index).rc
         assert exit_status_success == actual_rc
-        check_blockpage = test_cmd.format(
-            'r', webroot + '/pihole/blockingpage.css', webuser)
-        actual_rc = host.run(check_blockpage).rc
-        assert exit_status_success == actual_rc
         if test_webpage is True:
             # check webpage for unreadable files
             noPHPfopen = re.compile(
@@ -679,17 +659,10 @@ def test_FTL_detect_aarch64_no_errors(host):
     '''
     # mock uname to return aarch64 platform
     mock_command('uname', {'-m': ('aarch64', '0')}, host)
+    # mock `which sh` to return `/bin/sh`
+    mock_command('which', {'sh': ('/bin/sh', '0')}, host)
     # mock ldd to respond with aarch64 shared library
-    mock_command(
-        'ldd',
-        {
-            '/bin/ls': (
-                '/lib/ld-linux-aarch64.so.1',
-                '0'
-            )
-        },
-        host
-    )
+    mock_command('ldd', {'/bin/sh': ('/lib/ld-linux-aarch64.so.1', '0')}, host)
     detectPlatform = host.run('''
     source /opt/pihole/basic-install.sh
     create_pihole_user
@@ -712,8 +685,10 @@ def test_FTL_detect_armv4t_no_errors(host):
     '''
     # mock uname to return armv4t platform
     mock_command('uname', {'-m': ('armv4t', '0')}, host)
-    # mock ldd to respond with ld-linux shared library
-    mock_command('ldd', {'/bin/ls': ('/lib/ld-linux.so.3', '0')}, host)
+    # mock `which sh` to return `/bin/sh`
+    mock_command('which', {'sh': ('/bin/sh', '0')}, host)
+    # mock ldd to respond with armv4t shared library
+    mock_command('ldd', {'/bin/sh': ('/lib/ld-linux.so.3', '0')}, host)
     detectPlatform = host.run('''
     source /opt/pihole/basic-install.sh
     create_pihole_user
@@ -736,8 +711,10 @@ def test_FTL_detect_armv5te_no_errors(host):
     '''
     # mock uname to return armv5te platform
     mock_command('uname', {'-m': ('armv5te', '0')}, host)
+    # mock `which sh` to return `/bin/sh`
+    mock_command('which', {'sh': ('/bin/sh', '0')}, host)
     # mock ldd to respond with ld-linux shared library
-    mock_command('ldd', {'/bin/ls': ('/lib/ld-linux.so.3', '0')}, host)
+    mock_command('ldd', {'/bin/sh': ('/lib/ld-linux.so.3', '0')}, host)
     detectPlatform = host.run('''
     source /opt/pihole/basic-install.sh
     create_pihole_user
@@ -761,7 +738,9 @@ def test_FTL_detect_armv6l_no_errors(host):
     # mock uname to return armv6l platform
     mock_command('uname', {'-m': ('armv6l', '0')}, host)
     # mock ldd to respond with ld-linux-armhf shared library
-    mock_command('ldd', {'/bin/ls': ('/lib/ld-linux-armhf.so.3', '0')}, host)
+    # mock `which sh` to return `/bin/sh`
+    mock_command('which', {'sh': ('/bin/sh', '0')}, host)
+    mock_command('ldd', {'/bin/sh': ('/lib/ld-linux-armhf.so.3', '0')}, host)
     detectPlatform = host.run('''
     source /opt/pihole/basic-install.sh
     create_pihole_user
@@ -786,7 +765,9 @@ def test_FTL_detect_armv7l_no_errors(host):
     # mock uname to return armv7l platform
     mock_command('uname', {'-m': ('armv7l', '0')}, host)
     # mock ldd to respond with ld-linux-armhf shared library
-    mock_command('ldd', {'/bin/ls': ('/lib/ld-linux-armhf.so.3', '0')}, host)
+    # mock `which sh` to return `/bin/sh`
+    mock_command('which', {'sh': ('/bin/sh', '0')}, host)
+    mock_command('ldd', {'/bin/sh': ('/lib/ld-linux-armhf.so.3', '0')}, host)
     detectPlatform = host.run('''
     source /opt/pihole/basic-install.sh
     create_pihole_user
@@ -810,8 +791,10 @@ def test_FTL_detect_armv8a_no_errors(host):
     '''
     # mock uname to return armv8a platform
     mock_command('uname', {'-m': ('armv8a', '0')}, host)
+    # mock `which sh` to return `/bin/sh`
+    mock_command('which', {'sh': ('/bin/sh', '0')}, host)
     # mock ldd to respond with ld-linux-armhf shared library
-    mock_command('ldd', {'/bin/ls': ('/lib/ld-linux-armhf.so.3', '0')}, host)
+    mock_command('ldd', {'/bin/sh': ('/lib/ld-linux-armhf.so.3', '0')}, host)
     detectPlatform = host.run('''
     source /opt/pihole/basic-install.sh
     create_pihole_user
@@ -832,6 +815,8 @@ def test_FTL_detect_x86_64_no_errors(host):
     '''
     confirms only x86_64 package is downloaded for FTL engine
     '''
+    # mock `which sh` to return `/bin/sh`
+    mock_command('which', {'sh': ('/bin/sh', '0')}, host)
     detectPlatform = host.run('''
     source /opt/pihole/basic-install.sh
     create_pihole_user
@@ -852,6 +837,8 @@ def test_FTL_detect_unknown_no_errors(host):
     ''' confirms only generic package is downloaded for FTL engine '''
     # mock uname to return generic platform
     mock_command('uname', {'-m': ('mips', '0')}, host)
+    # mock `which sh` to return `/bin/sh`
+    mock_command('which', {'sh': ('/bin/sh', '0')}, host)
     detectPlatform = host.run('''
     source /opt/pihole/basic-install.sh
     create_pihole_user
@@ -868,8 +855,8 @@ def test_FTL_download_aarch64_no_errors(host):
     '''
     confirms only aarch64 package is downloaded for FTL engine
     '''
-    # mock whiptail answers and ensure installer dependencies
-    mock_command('whiptail', {'*': ('', '0')}, host)
+    # mock dialog answers and ensure installer dependencies
+    mock_command('dialog', {'*': ('', '0')}, host)
     host.run('''
     source /opt/pihole/basic-install.sh
     package_manager_detect
@@ -893,30 +880,17 @@ def test_FTL_binary_installed_and_responsive_no_errors(host):
     source /opt/pihole/basic-install.sh
     create_pihole_user
     funcOutput=$(get_binary_name)
+    echo "development" > /etc/pihole/ftlbranch
     binary="pihole-FTL${funcOutput##*pihole-FTL}"
     theRest="${funcOutput%pihole-FTL*}"
     FTLdetect "${binary}" "${theRest}"
-    pihole-FTL version
+    ''')
+    version_check = host.run('''
+    VERSION=$(pihole-FTL version)
+    echo ${VERSION:0:1}
     ''')
     expected_stdout = 'v'
-    assert expected_stdout in installed_binary.stdout
-
-
-# def test_FTL_support_files_installed(host):
-#     '''
-#     confirms FTL support files are installed
-#     '''
-#     support_files = host.run('''
-#     source /opt/pihole/basic-install.sh
-#     FTLdetect
-#     stat -c '%a %n' /var/log/pihole-FTL.log
-#     stat -c '%a %n' /run/pihole-FTL.port
-#     stat -c '%a %n' /run/pihole-FTL.pid
-#     ls -lac /run
-#     ''')
-#     assert '644 /run/pihole-FTL.port' in support_files.stdout
-#     assert '644 /run/pihole-FTL.pid' in support_files.stdout
-#     assert '644 /var/log/pihole-FTL.log' in support_files.stdout
+    assert expected_stdout in version_check.stdout
 
 
 def test_IPv6_only_link_local(host):
@@ -1115,40 +1089,38 @@ def test_os_check_passes(host):
 
 def test_package_manager_has_installer_deps(host):
     ''' Confirms OS is able to install the required packages for the installer'''
-    mock_command('whiptail', {'*': ('', '0')}, host)
+    mock_command('dialog', {'*': ('', '0')}, host)
     output = host.run('''
     source /opt/pihole/basic-install.sh
     package_manager_detect
     install_dependent_packages ${INSTALLER_DEPS[@]}
     ''')
 
-    assert 'No package' not in output.stdout  # centos7 still exits 0...
+    assert 'No package' not in output.stdout
     assert output.rc == 0
 
 
 def test_package_manager_has_pihole_deps(host):
     ''' Confirms OS is able to install the required packages for Pi-hole '''
-    mock_command('whiptail', {'*': ('', '0')}, host)
+    mock_command('dialog', {'*': ('', '0')}, host)
     output = host.run('''
     source /opt/pihole/basic-install.sh
     package_manager_detect
-    select_rpm_php
     install_dependent_packages ${PIHOLE_DEPS[@]}
     ''')
 
-    assert 'No package' not in output.stdout  # centos7 still exits 0...
+    assert 'No package' not in output.stdout
     assert output.rc == 0
 
 
 def test_package_manager_has_web_deps(host):
     ''' Confirms OS is able to install the required packages for web '''
-    mock_command('whiptail', {'*': ('', '0')}, host)
+    mock_command('dialog', {'*': ('', '0')}, host)
     output = host.run('''
     source /opt/pihole/basic-install.sh
     package_manager_detect
-    select_rpm_php
     install_dependent_packages ${PIHOLE_WEB_DEPS[@]}
     ''')
 
-    assert 'No package' not in output.stdout  # centos7 still exits 0...
+    assert 'No package' not in output.stdout
     assert output.rc == 0

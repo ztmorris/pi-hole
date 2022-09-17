@@ -3,12 +3,15 @@
 #
 
 <p align="center">
-    <a href="https://pi-hole.net/">
-        <img src="https://pi-hole.github.io/graphics/Vortex/Vortex_with_Wordmark.svg" width="150" height="260" alt="Pi-hole">
-    </a>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://pi-hole.github.io/graphics/Vortex/Vortex_Vertical_wordmark_darkmode.png">
+    <source media="(prefers-color-scheme: light)" srcset="https://pi-hole.github.io/graphics/Vortex/Vortex_Vertical_wordmark_lightmode.png">
+    <img src="https://pi-hole.github.io/graphics/Vortex/Vortex_Vertical_wordmark_lightmode.png" width="168" height="270" alt="Pi-hole website">
+  </picture>
     <br>
     <strong>Network-wide ad blocking via your own Linux hardware</strong>
 </p>
+
 <!-- markdownlint-enable MD033 -->
 
 The Pi-hole® is a [DNS sinkhole](https://en.wikipedia.org/wiki/DNS_Sinkhole) that protects your devices from unwanted content without installing any client-side software.
@@ -19,39 +22,19 @@ The Pi-hole® is a [DNS sinkhole](https://en.wikipedia.org/wiki/DNS_Sinkhole) th
 - **Lightweight**: runs smoothly with [minimal hardware and software requirements](https://docs.pi-hole.net/main/prerequisites/)
 - **Robust**: a command line interface that is quality assured for interoperability
 - **Insightful**: a beautiful responsive Web Interface dashboard to view and control your Pi-hole
-- **Versatile**: can optionally function as a [DHCP server](https://discourse.pi-hole.net/t/how-do-i-use-pi-holes-built-in-dhcp-server-and-why-would-i-want-to/3026), ensuring *all* your devices are protected automatically
+- **Versatile**: can optionally function as a [DHCP server](https://discourse.pi-hole.net/t/how-do-i-use-pi-holes-built-in-dhcp-server-and-why-would-i-want-to/3026), ensuring _all_ your devices are protected automatically
 - **Scalable**: [capable of handling hundreds of millions of queries](https://pi-hole.net/2017/05/24/how-much-traffic-can-pi-hole-handle/) when installed on server-grade hardware
 - **Modern**: blocks ads over both IPv4 and IPv6
 - **Free**: open source software that helps ensure _you_ are the sole person in control of your privacy
 
 -----
-
-## One-Step Automated Install
-
-Those who want to get started quickly and conveniently may install Pi-hole using the following command:
-
-### `curl -sSL https://install.pi-hole.net | bash`
-
-## Alternative Install Methods
-
-Piping to `bash` is [controversial](https://pi-hole.net/2016/07/25/curling-and-piping-to-bash), as it prevents you from [reading code that is about to run](https://github.com/pi-hole/pi-hole/blob/master/automated%20install/basic-install.sh) on your system. Therefore, we provide these alternative installation methods which allow code review before installation:
-
-### Method 1: Clone our repository and run
+### Method 1: Clone the repository and run
 
 ```bash
-git clone --depth 1 https://github.com/pi-hole/pi-hole.git Pi-hole
+git clone --depth 1 https://github.com/ztmorris/pi-hole.git Pi-hole
 cd "Pi-hole/automated install/"
 sudo bash basic-install.sh
 ```
-
-### Method 2: Manually download the installer and run
-
-```bash
-wget -O basic-install.sh https://install.pi-hole.net
-sudo bash basic-install.sh
-```
-### Method 3: Using Docker to deploy Pi-hole
-Please refer to the [Pi-hole docker repo](https://github.com/pi-hole/docker-pi-hole) to use the Official Docker Images.
 
 ## [Post-install: Make your network take advantage of Pi-hole](https://docs.pi-hole.net/main/post-install/)
 
@@ -112,7 +95,7 @@ While we are primarily reachable on our [Discourse User Forum](https://discourse
 
 ### [Faster-than-light Engine](https://github.com/pi-hole/ftl)
 
-[FTLDNS](https://github.com/pi-hole/ftl) is a lightweight, purpose-built daemon used to provide statistics needed for the Web Interface, and its API can be easily integrated into your own projects. As the name implies, FTLDNS does this all *very quickly*!
+[FTLDNS](https://github.com/pi-hole/ftl) is a lightweight, purpose-built daemon used to provide statistics needed for the Web Interface, and its API can be easily integrated into your own projects. As the name implies, FTLDNS does this all _very quickly_!
 
 Some of the statistics you can integrate include:
 
@@ -139,7 +122,7 @@ Some notable features include:
 - [Updating Ad Lists](https://docs.pi-hole.net/core/pihole-command/#gravity)
 - [Querying Ad Lists for blocked domains](https://docs.pi-hole.net/core/pihole-command/#query)
 - [Enabling and Disabling Pi-hole](https://docs.pi-hole.net/core/pihole-command/#enable-disable)
-- ... and *many* more!
+- ... and _many_ more!
 
 You can read our [Core Feature Breakdown](https://docs.pi-hole.net/core/pihole-command/#pi-hole-core) for more information.
 
@@ -161,4 +144,4 @@ Some notable features include:
 There are several ways to [access the dashboard](https://discourse.pi-hole.net/t/how-do-i-access-pi-holes-dashboard-admin-interface/3168):
 
 1. `http://pi.hole/admin/` (when using Pi-hole as your DNS server)
-2. `http://<IP_ADDPRESS_OF_YOUR_PI_HOLE>/admin/`
+2. `http://<IP_ADDRESS_OF_YOUR_PI_HOLE>/admin/`
