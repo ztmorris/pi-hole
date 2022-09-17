@@ -28,12 +28,7 @@ The Pi-hole® is a [DNS sinkhole](https://en.wikipedia.org/wiki/DNS_Sinkhole) th
 - **Free**: open source software that helps ensure _you_ are the sole person in control of your privacy
 
 -----
-
-## Alternative Install Methods
-
-Piping to `bash` is [controversial](https://pi-hole.net/2016/07/25/curling-and-piping-to-bash), as it prevents you from [reading code that is about to run](https://github.com/ztmorris/pi-hole/blob/master/automated%20install/basic-install.sh) on your system. Therefore, we provide these alternative installation methods which allow code review before installation:
-
-### Method 1: Clone our repository and run
+### Method 1: Clone the repository and run
 
 ```bash
 git clone --depth 1 https://github.com/ztmorris/pi-hole.git Pi-hole
