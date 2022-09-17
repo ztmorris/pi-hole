@@ -46,7 +46,9 @@ OpenDNS (ECS, DNSSEC);208.67.222.222;208.67.220.220;2620:119:35::35;2620:119:53:
 Level3 (Level 3 Only Servers);4.2.2.1;4.2.2.2;;
 Comodo (Blocks Malware);8.26.56.26;8.20.247.20;;
 CleanBrowsing (Family Filter 1-2 Adult Filter NOT IPv6);185.228.168.168;185.228.169.168;185.228.168.10;185.228.169.11
+CleanBrowsing (DNS/HTTPS);https://doh.cleanbrowsing.org/doh/family-filter/;https://doh.cleanbrowsing.org/doh/adult-filter/;;
 AdGuard (Like Pihole 1-2 Family DNS 3-4 NOT IPv6);94.140.14.14;94.140.15.15;94.140.15.16;94.140.14.15
+AdGaurd (DNS/HTTPS);https://family.adguard-dns.com/dns-query;https://dns.adguard-dns.com/dns-query;;
 EOM
 )
 
